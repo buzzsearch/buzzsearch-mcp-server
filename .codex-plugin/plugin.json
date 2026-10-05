@@ -1,0 +1,21 @@
+{
+  "name": "buzzsearch",
+  "version": "1.1.1",
+  "description": "Search UGC and social comments across Reddit, TikTok, YouTube, and Facebook for customer quotes, pain points, and ad hooks.",
+  "author": { "name": "BuzzSearch", "url": "https://buzzsearch.ai" },
+  "homepage": "https://buzzsearch.ai/mcp",
+  "repository": "https://github.com/buzzsearch/buzzsearch-mcp-server",
+  "license": "MIT",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "BuzzSearch",
+    "shortDescription": "Search social comments for customer quotes and ad hooks",
+    "developerName": "BuzzSearch",
+    "category": "Productivity",
+    "websiteURL": "https://buzzsearch.ai/mcp",
+    "defaultPrompt": [
+      "Research what customers dislike about robot vacuums and cite their exact words.",
+      "Search Reddit and TikTok for why people quit meal kit subscriptions, then write five ad hooks from their comments."
+    ]
+  }
+}

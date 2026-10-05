@@ -1,0 +1,20 @@
+{
+  "name": "buzzsearch-plugins",
+  "interface": {
+    "displayName": "BuzzSearch Plugins"
+  },
+  "plugins": [
+    {
+      "name": "buzzsearch",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

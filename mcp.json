@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "buzzsearch": {
+      "type": "streamable-http",
+      "url": "https://buzzsearch.ai/api/mcp"
+    }
+  }
+}

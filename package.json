@@ -14,10 +14,11 @@
   "scripts": {
     "build": "tsc && chmod +x dist/index.js",
     "typecheck": "tsc --noEmit",
+    "check:plugins": "node scripts/check-plugins.mjs",
     "sync": "node scripts/sync-tools.ts",
     "sync:check": "node scripts/sync-tools.ts --check",
     "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run check:plugins && npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"

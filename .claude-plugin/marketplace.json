@@ -1,0 +1,12 @@
+{
+  "name": "buzzsearch-plugins",
+  "description": "The BuzzSearch MCP plugin for searching social comments.",
+  "owner": { "name": "BuzzSearch" },
+  "plugins": [
+    {
+      "name": "buzzsearch",
+      "source": "./",
+      "description": "Search social comments for customer quotes and ad hooks."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "buzzsearch",
+  "version": "1.1.1",
+  "description": "Search UGC and social comments across Reddit, TikTok, YouTube, and Facebook for customer quotes, pain points, and ad hooks.",
+  "author": { "name": "BuzzSearch", "url": "https://buzzsearch.ai" },
+  "homepage": "https://buzzsearch.ai/mcp",
+  "repository": "https://github.com/buzzsearch/buzzsearch-mcp-server",
+  "license": "MIT",
+  "keywords": ["customer-research", "social-listening", "ad-copy", "mcp"]
+}

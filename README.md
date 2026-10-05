@@ -22,6 +22,34 @@ Ask your agent something like *"What do people hate about robot vacuums? Give me
 
 The hosted server is the recommended install. You sign in with your BuzzSearch account the first time you connect, so there is no key to copy.
 
+### Plugin for Claude Code and Codex
+
+The plugin connects to the same hosted server and exposes its tools directly.
+Use `search` for customer research, pain points, quotes, and ad hooks. No skills
+are bundled.
+
+Once these plugin files are published to GitHub, install in Claude Code:
+
+```bash
+claude plugin marketplace add buzzsearch/buzzsearch-mcp-server
+claude plugin install buzzsearch@buzzsearch-plugins
+```
+
+For Codex, add the repo marketplace:
+
+```bash
+codex plugin marketplace add buzzsearch/buzzsearch-mcp-server
+codex plugin add buzzsearch@buzzsearch-plugins
+```
+
+You can also install BuzzSearch from the `buzzsearch-plugins` source in the plugin browser.
+Sign in to BuzzSearch through the client's MCP connection flow. If you already
+added the server manually, keep one connection to avoid duplicate tools.
+
+For local testing and the shared repo layout, see
+[distribution notes](docs/distribution.md). You can also connect the server
+directly using the commands below.
+
 ### Claude Code
 
 ```bash
@@ -118,7 +146,7 @@ claude mcp add --transport http buzzsearch https://buzzsearch.ai/api/mcp \
 
 | Tool | Cost | What it returns |
 |---|---|---|
-| `search` | credits | Crawls social comments for a question and returns a cited answer with the top quotes. Paste a TikTok, YouTube, Reddit, or Facebook group link to read that page's comments. |
+| `search` | credits | Searches the web for UGC on Reddit, TikTok, YouTube, and Facebook, reads the comments, and returns a cited answer with the top quotes. Paste a post or video link to read its comments. |
 | `get_search` | free | Reads back a finished search, or resumes one still running. |
 | `get_quotes` | free | Pages through every quote, filtered by pain point, failed solution, objection, desired outcome, lingo, source, or phrase. |
 | `get_sources` | free | Lists the threads and videos read, with engagement and quote counts. |
@@ -160,6 +188,7 @@ A search uses credits from your BuzzSearch balance, and the exact charge comes b
 
 ```bash
 npm install
+npm run check:plugins
 npm run build
 BUZZSEARCH_API_KEY=bz_live_... npm run inspect   # MCP Inspector against the local build
 BUZZSEARCH_API_KEY=bz_live_... npm run sync      # refresh tools.json from the live server

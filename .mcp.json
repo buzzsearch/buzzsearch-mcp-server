@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "buzzsearch": {
+      "type": "http",
+      "url": "https://buzzsearch.ai/api/mcp"
+    }
+  }
+}
