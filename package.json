@@ -1,0 +1,59 @@
+{
+  "name": "buzzsearch-mcp",
+  "version": "1.1.1",
+  "description": "MCP server for social listening: search Reddit, TikTok, YouTube, and Facebook comments for customer quotes, pain points, and ad hooks.",
+  "mcpName": "ai.buzzsearch/mcp",
+  "type": "module",
+  "bin": {
+    "buzzsearch-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "tools.json"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "sync": "node scripts/sync-tools.ts",
+    "sync:check": "node scripts/sync-tools.ts --check",
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "reddit",
+    "tiktok",
+    "youtube",
+    "facebook",
+    "social-listening",
+    "market-research",
+    "audience-research",
+    "customer-research",
+    "ad-copy",
+    "copywriting",
+    "claude",
+    "cursor"
+  ],
+  "homepage": "https://buzzsearch.ai/mcp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/buzzsearch/buzzsearch-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/buzzsearch/buzzsearch-mcp-server/issues"
+  },
+  "license": "MIT",
+  "author": "BuzzSearch (https://buzzsearch.ai)"
+}

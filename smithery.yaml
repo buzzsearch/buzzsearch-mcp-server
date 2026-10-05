@@ -1,0 +1,14 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - apiKey
+    properties:
+      apiKey:
+        type: string
+        description: Your BuzzSearch API key (Settings, API in the BuzzSearch app).
+  commandFunction: |-
+    (config) => ({ command: 'node', args: ['dist/index.js'], env: { BUZZSEARCH_API_KEY: config.apiKey } })
+  exampleConfig:
+    apiKey: bz_live_your_key

@@ -1,0 +1,23 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 14 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install
+      - run: npm run build
+      - name: tools.json matches the live server
+        if: env.BUZZSEARCH_API_KEY != ''
+        env:
+          BUZZSEARCH_API_KEY: ${{ secrets.BUZZSEARCH_API_KEY }}
+        run: npm run sync:check

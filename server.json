@@ -1,0 +1,36 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.buzzsearch/mcp",
+  "title": "BuzzSearch",
+  "description": "Search Reddit, TikTok, YouTube, and Facebook comments for exact customer quotes for ad copy.",
+  "websiteUrl": "https://buzzsearch.ai/mcp",
+  "repository": {
+    "url": "https://github.com/buzzsearch/buzzsearch-mcp-server",
+    "source": "github"
+  },
+  "version": "1.1.1",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://buzzsearch.ai/api/mcp"
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "buzzsearch-mcp",
+      "version": "1.1.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "BUZZSEARCH_API_KEY",
+          "description": "API key from BuzzSearch Settings, API tab",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
