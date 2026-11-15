@@ -22,8 +22,10 @@ wrappers. The existing server prompts remain available through MCP.
 | `.claude-plugin/marketplace.json` | Claude Code marketplace pointing at `./` |
 
 New OpenAI packages use the portable root manifest; the Codex manifest supports
-the compatibility format. The portable root intentionally omits
-`extensions.com.openai`, so the Codex overlay supplies OpenAI-specific metadata.
+the compatibility format. The portable root declares OpenAI listing and review
+metadata in `extensions.com.openai`. Codex compatibility metadata mirrors those
+settings; the validator checks that they agree. OpenAI uses the portable
+extension when it is present, without merging the Codex overlay.
 Portable MCP uses `type: streamable-http`; the compatibility config uses
 `type: http`. Both connect to the same server. See
 [OpenAI packaging documentation](https://developers.openai.com/plugins/build/plugins)
@@ -41,7 +43,9 @@ remote endpoint. A separate ChatGPT source repo is unnecessary. Registering and
 submitting a public OpenAI listing is a separate step from creating this repo's
 local marketplace; see
 [OpenAI's publishing guidance](https://developers.openai.com/plugins/build/plugins#publish-official-public-plugins).
-Add a registered server mapping only after OpenAI supplies a real connection id.
+Public submission packages declare the remote server URL directly. Do not bundle
+registered app references or hooks, which the public ZIP submission does not
+currently accept.
 
 ## Authentication and development
 
@@ -75,3 +79,48 @@ versions, marketplace roots, and endpoint agreement in CI and before npm publish
 Refresh `tools.json` from the hosted server with `npm run sync` after server
 changes deploy. Plugin clients discover tools from the remote server directly,
 so they do not use that npm snapshot.
+
+## OpenAI submission package
+
+Run `npm run pack:plugin` to create a validated ZIP under the gitignored
+`artifacts/` directory. It includes the portable and Codex manifests, MCP
+configs, license, and the existing BuzzSearch 512px icon. It excludes client
+marketplaces, npm source files, and credentials.
+
+The subtitle is 29 characters. The listing uses `Business & Operations`, a
+supported category chosen for its customer research and marketing workflows.
+The description explains how marketing and product teams find customer quotes
+and use them for campaign messaging, without pricing or promotional language.
+There is no standalone Marketing category in the
+[supported category list](https://developers.openai.com/plugins/deploy/submission-errors#listing-and-interface-errors).
+The support URL is the public GitHub issue
+tracker; privacy and terms use the public BuzzSearch pages. All four listing
+URLs returned HTTP 200 without sign-in when checked on October 5, 2026.
+
+Five positive and three negative review cases are included in the manifest as
+proposed review scenarios. They have not yet been run with the OpenAI reviewer
+account. Run them in order: the first creates research that the following cases
+reuse. Verify the expected results with that account before submitting.
+
+The provided [video walkthrough](https://www.youtube.com/watch?v=YAVDTDy27_8)
+is included under `extensions.com.openai.review.demo_recording_url` in the
+portable and Codex compatibility manifests. It is OpenAI review metadata and is
+not added to the public listing or Claude manifest. Reviewers still need access
+to the recording and credentials and sign-in instructions in the secure
+dashboard form. Do not put account credentials in the source or ZIP.
+See [OpenAI's review information requirements](https://developers.openai.com/plugins/deploy/submission#complete-review-information).
+
+The balance review case asks the model to report only the balance and explain
+that it is shared with the connected BuzzSearch account. This package-only
+revision does not modify the MCP tool definition or its response; the remote
+server controls those independently of the ZIP.
+
+The category and URL fields still need to pass OpenAI's automated scans. The
+local validator checks package fields and lengths; it does not prove reviewer
+access, category acceptance, or approval.
+
+**Tool update needs further review** is a held server update, separate from ZIP
+metadata checks. Inspect each tool's **Held update** and **Live definition** in
+**MCPs → Issues**. Correct concrete server findings and rescan, or use **Appeal**
+with an explanation when the finding is incorrect. A ZIP change does not approve
+held tools. See [OpenAI's tool issue workflow](https://developers.openai.com/plugins/deploy/submission#find-and-resolve-tool-issues).

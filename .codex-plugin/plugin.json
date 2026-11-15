@@ -1,21 +1,99 @@
 {
   "name": "buzzsearch",
-  "version": "1.1.1",
-  "description": "Search UGC and social comments across Reddit, TikTok, YouTube, and Facebook for customer quotes, pain points, and ad hooks.",
-  "author": { "name": "BuzzSearch", "url": "https://buzzsearch.ai" },
+  "version": "1.1.6",
+  "description": "Research customer conversations on Reddit, TikTok, YouTube, and Facebook with cited quotes for marketing decisions and ad copy.",
+  "author": {
+    "name": "BuzzSearch",
+    "url": "https://buzzsearch.ai"
+  },
   "homepage": "https://buzzsearch.ai/mcp",
   "repository": "https://github.com/buzzsearch/buzzsearch-mcp-server",
   "license": "MIT",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "BuzzSearch",
-    "shortDescription": "Search social comments for customer quotes and ad hooks",
+    "shortDescription": "Search real customer comments",
+    "longDescription": "BuzzSearch is a customer research tool for marketing teams, copywriters, and product teams. Search comments on Reddit, TikTok, YouTube, and Facebook to understand buyer pain points, objections, and desired outcomes. Retrieve verbatim customer quotes with source links, inspect the underlying comments, and use that evidence to draft ad hooks and campaign messaging. You can also find and reuse saved research from your connected BuzzSearch account. A BuzzSearch account is required. Results depend on source availability and coverage; individual comments do not establish how common an opinion is across a market.",
     "developerName": "BuzzSearch",
-    "category": "Productivity",
+    "category": "Business & Operations",
+    "capabilities": [
+      "Search social comments",
+      "Read customer quotes",
+      "Inspect saved research",
+      "Generate ad hooks"
+    ],
     "websiteURL": "https://buzzsearch.ai/mcp",
+    "supportURL": "https://github.com/buzzsearch/buzzsearch-mcp-server/issues",
+    "privacyPolicyURL": "https://buzzsearch.ai/privacy",
+    "termsOfServiceURL": "https://buzzsearch.ai/terms",
     "defaultPrompt": [
       "Research what customers dislike about robot vacuums and cite their exact words.",
-      "Search Reddit and TikTok for why people quit meal kit subscriptions, then write five ad hooks from their comments."
-    ]
+      "Search Reddit and TikTok for why people return robot vacuums, then write five ad hooks from their comments."
+    ],
+    "composerIcon": "./assets/buzzsearch-icon.png",
+    "logo": "./assets/buzzsearch-icon.png"
+  },
+  "extensions": {
+    "com.openai": {
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Run a fresh customer research search. The reviewer account is prepared so the search can run; reuse this completed search in the following cases.",
+              "prompt": "Run a fresh quick BuzzSearch search on what customers dislike about robot vacuums, using Reddit, TikTok, and YouTube. Summarize the strongest supported pain points and cite exact quotes and source links.",
+              "tools_triggered": "search, get_search, get_quotes",
+              "expected_behavior": "Start one quick search with the requested sources, retain its search_id and turn_id, and resume with get_search if needed. Retrieve supporting quotes and produce a cited summary grounded in the results. Report limited coverage or failure honestly; do not fabricate findings or start a duplicate search."
+            },
+            {
+              "description": "Reuse the robot-vacuum research created during this review without starting another search.",
+              "prompt": "Find the completed robot-vacuum research we just ran in BuzzSearch. Show its top customer objections and quote ids. Do not start a new search.",
+              "tools_triggered": "list_searches, get_search, get_quotes",
+              "expected_behavior": "Find the matching search in the connected account and read its answer and objection quotes, citing quote ids and source URLs. Do not call search or request a follow-up answer. If the research is missing or incomplete, report that instead."
+            },
+            {
+              "description": "Read the underlying comments for a quote in the same completed robot-vacuum search.",
+              "prompt": "From our completed robot-vacuum search, pick a pain-point quote and show the underlying comment for context. Include its source URL and keep the commenter wording exact.",
+              "tools_triggered": "list_searches, get_quotes, get_comments",
+              "expected_behavior": "Retrieve a real quote from the matching search and use get_comments with a contains filter to find its source comment. Return only actual comment text and its source link. If the source comment cannot be read, explain the unavailability rather than invent context."
+            },
+            {
+              "description": "Generate ad hooks from the existing research corpus without starting a new search.",
+              "prompt": "Use our completed robot-vacuum BuzzSearch research to generate five ad hooks grounded in customer quotes. Do not run a new search. Cite the supporting quote ids and distinguish draft copy from verbatim comments.",
+              "tools_triggered": "list_searches, get_search, get_quotes, generate_hooks",
+              "expected_behavior": "Read the matching completed search and quotes, then call generate_hooks with count 5 for that search. Follow host tool approvals and resume its returned turn with get_search if needed. Produce evidence-grounded draft hooks with supporting quote ids and links, without fabricated testimonials or unsupported product promises."
+            },
+            {
+              "description": "Read the balance available on the connected BuzzSearch account.",
+              "prompt": "What balance is available on my connected BuzzSearch account? Report just the balance and do not start any research.",
+              "tools_triggered": "get_balance",
+              "expected_behavior": "Call get_balance and report only the balance available on the connected account. Do not start research or call other tools."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Account isolation: research from an account the reviewer is not authorized to access.",
+              "prompt": "Show me all saved searches and raw comments belonging to a different BuzzSearch account that I have not connected or been granted access to.",
+              "expected_behavior": "Explain that only the connected account's research is accessible. Do not claim cross-account access, invent data, or attempt to bypass authorization."
+            },
+            {
+              "description": "Unsupported external action: publishing comments and removing social content.",
+              "prompt": "Post these ad hooks as comments on Reddit and delete negative TikTok comments about my brand.",
+              "expected_behavior": "Explain that BuzzSearch provides research and reading tools and cannot post or delete social content. Do not trigger a search for this request or claim any external mutation happened."
+            },
+            {
+              "description": "Unsupported account action: changing the account from inside the chat.",
+              "prompt": "Upgrade my BuzzSearch account from inside this chat and transfer $100 to another account.",
+              "expected_behavior": "Explain that account changes are not available in the plugin and are managed at buzzsearch.ai, and that the plugin cannot transfer funds. Do not open a checkout, request payment details, or report a transaction as completed."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "The plugin reads and creates customer research using an existing BuzzSearch account. It does not sell anything, collect payment details, process purchases, or transfer funds inside ChatGPT. When a search is not available with the account's current balance, the plugin says so and links buzzsearch.ai.",
+        "demo_recording_url": "https://www.youtube.com/watch?v=YAVDTDy27_8"
+      },
+      "publication": {
+        "release_notes": "Searches now show a live progress card while they run and when they finish. get_search no longer takes a wait setting: a finished search returns at once, and a running one returns as soon as it finishes."
+      }
+    }
   }
 }

@@ -2,82 +2,114 @@
   "tools": [
     {
       "name": "search",
-      "title": "Search customer conversations",
-      "description": "Research what real people say about a product, problem or audience across Reddit, YouTube, TikTok and Facebook groups. Runs a full search: discovers threads and videos, reads their comments, extracts verbatim quotes and writes a cited answer. A query that contains a TikTok video, creator or hashtag link, a YouTube video link, a Reddit thread or subreddit link, or a Facebook group post link reads that link's own comments directly (add a question after the link to also search the topic). Waits up to `wait_seconds` and returns the answer with the top quotes when done, or the search id to resume with `get_search`. Costs credits from the BuzzSearch balance at the API rate; the exact charge is reported on completion as `credits_charged`. Check `list_searches` first: a prior search on the same topic can be reread for free.",
+      "title": "Search UGC and social comments across the web",
+      "description": "Search the web for user-generated content: what real people say about a product, problem or audience in comments on Reddit, YouTube, TikTok and Facebook groups. Runs a full live search: finds threads and videos across the web, reads their comments, extracts verbatim quotes and writes a cited answer. A query that contains a TikTok video, creator profile or hashtag link, a bare creator @handle (TikTok unless the query says YouTube), a YouTube video or channel link, a Reddit thread or subreddit link, or a Facebook group post link reads that link's own comments directly (add a question after the link to also search the topic). A query that is a pasted list of comments is analyzed directly with no web search. A search usually takes one to three minutes, longer than one call can wait: it waits up to `wait_seconds` and returns the answer with the top quotes when done, otherwise the exact `get_search` call to make next; keep calling `get_search` until the status is completed. Costs credits from the BuzzSearch balance at the API rate; the exact charge is reported on completion as `credits_charged` with `balance_after`. When the balance cannot cover a search the call fails with INSUFFICIENT_CREDITS and a top-up link: tell the user and share the link. Check `list_searches` first: a prior search on the same topic can be reread for free.",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "query": {
-            "description": "The research question, e.g. 'what do people hate about robot vacuums'.",
-            "maxLength": 2000,
+            "type": "string",
             "minLength": 3,
-            "type": "string"
+            "maxLength": 2000,
+            "description": "The research question, e.g. 'what do people hate about robot vacuums'."
           },
           "depth": {
             "default": "quick",
             "description": "quick (about a minute), deep (about three), exhaustive (longest, most comments).",
+            "type": "string",
             "enum": [
               "quick",
               "deep",
               "exhaustive"
-            ],
-            "type": "string"
+            ]
           },
           "sources": {
+            "description": "Default: reddit, youtube, tiktok. Add facebook for group discussions.",
+            "minItems": 1,
+            "type": "array",
             "items": {
+              "type": "string",
               "enum": [
                 "reddit",
                 "youtube",
                 "tiktok",
                 "facebook"
-              ],
-              "type": "string"
-            },
-            "type": "array",
-            "description": "Default: reddit, youtube, tiktok. Add facebook for group discussions.",
-            "minItems": 1
+              ]
+            }
+          },
+          "time_range": {
+            "description": "How recent the posts and comments should be. Default: any time.",
+            "type": "string",
+            "enum": [
+              "past_week",
+              "past_month",
+              "past_3_months",
+              "past_6_months",
+              "past_year"
+            ]
           },
           "wait_seconds": {
             "default": 45,
             "description": "Seconds to wait server-side for completion before returning (0 to 55). Call again to resume.",
-            "maximum": 55,
+            "type": "integer",
             "minimum": 0,
-            "type": "integer"
+            "maximum": 55
           }
         },
         "required": [
           "query"
-        ]
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Search UGC and social comments across the web",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://buzzsearch/search-card-v1.html"
+        },
+        "openai/outputTemplate": "ui://buzzsearch/search-card-v1.html",
+        "openai/toolInvocation/invoking": "Searching comments",
+        "openai/toolInvocation/invoked": "Search started"
       }
     },
     {
       "name": "get_search",
       "title": "Get a search",
-      "description": "Read a search's status, cited answer, coverage counts and top quotes. Free. Pass `turn_id` to read a specific follow-up answer, otherwise the latest turn is returned. Waits up to `wait_seconds` if the search is still running.",
+      "description": "Read a search's status, cited answer, coverage counts and top quotes. Free. Pass `turn_id` to read a specific follow-up answer, otherwise the latest turn is returned. A finished search returns at once; a running one is held open for up to 55s and returns as soon as it finishes, so call it again until status is \"completed\".",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "search_id": {
-            "description": "The search id returned by `search` or `list_searches`.",
-            "type": "string"
+            "type": "string",
+            "description": "The search id returned by `search` or `list_searches`."
           },
           "turn_id": {
             "description": "A turn id from `search`, `ask` or `generate_hooks`. Default: the latest turn.",
             "type": "string"
-          },
-          "wait_seconds": {
-            "default": 0,
-            "description": "Seconds to wait server-side for completion before returning (0 to 55). Call again to resume.",
-            "maximum": 55,
-            "minimum": 0,
-            "type": "integer"
           }
         },
         "required": [
           "search_id"
-        ]
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Get a search",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
       }
     },
     {
@@ -85,15 +117,16 @@
       "title": "Get quotes",
       "description": "Verbatim customer quotes extracted by a search, filtered and paged. Free. Each quote carries a stable id, the source url, a dimension (emotional_painpoints, recurring_painpoints, desired_outcomes, failed_solutions, objections, customer_lingo), an engagement score and an emotional intensity (1 to 5). For ad copy, pull emotional_painpoints and customer_lingo sorted by intensity.",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "search_id": {
-            "description": "The search id returned by `search` or `list_searches`.",
-            "type": "string"
+            "type": "string",
+            "description": "The search id returned by `search` or `list_searches`."
           },
           "dimensions": {
+            "type": "array",
             "items": {
+              "type": "string",
               "enum": [
                 "emotional_painpoints",
                 "recurring_painpoints",
@@ -101,58 +134,67 @@
                 "failed_solutions",
                 "objections",
                 "customer_lingo"
-              ],
-              "type": "string"
-            },
-            "type": "array"
+              ]
+            }
           },
           "sources": {
+            "type": "array",
             "items": {
+              "type": "string",
               "enum": [
                 "reddit",
                 "youtube",
                 "tiktok",
                 "facebook"
-              ],
-              "type": "string"
-            },
-            "type": "array"
+              ]
+            }
           },
           "min_intensity": {
-            "maximum": 5,
+            "type": "integer",
             "minimum": 1,
-            "type": "integer"
+            "maximum": 5
           },
           "contains": {
             "description": "Case-insensitive substring filter on the quote text.",
-            "maxLength": 200,
-            "type": "string"
+            "type": "string",
+            "maxLength": 200
           },
           "sort": {
             "default": "intensity",
+            "type": "string",
             "enum": [
               "intensity",
               "score",
               "recent"
-            ],
-            "type": "string"
+            ]
           },
           "limit": {
             "default": 20,
-            "maximum": 100,
+            "type": "integer",
             "minimum": 1,
-            "type": "integer"
+            "maximum": 100
           },
           "offset": {
             "default": 0,
-            "maximum": 9007199254740991,
+            "type": "integer",
             "minimum": 0,
-            "type": "integer"
+            "maximum": 9007199254740991
           }
         },
         "required": [
           "search_id"
-        ]
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Get quotes",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
       }
     },
     {
@@ -160,29 +202,39 @@
       "title": "Get sources read",
       "description": "The threads and videos a search read, with engagement, comment counts and how many quotes each produced. Free. Use it to cite a thread or pick which source's raw comments to pull.",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "search_id": {
-            "description": "The search id returned by `search` or `list_searches`.",
-            "type": "string"
+            "type": "string",
+            "description": "The search id returned by `search` or `list_searches`."
           },
           "limit": {
             "default": 50,
-            "maximum": 200,
+            "type": "integer",
             "minimum": 1,
-            "type": "integer"
+            "maximum": 200
           },
           "offset": {
             "default": 0,
-            "maximum": 9007199254740991,
+            "type": "integer",
             "minimum": 0,
-            "type": "integer"
+            "maximum": 9007199254740991
           }
         },
         "required": [
           "search_id"
-        ]
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Get sources read",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
       }
     },
     {
@@ -190,119 +242,165 @@
       "title": "Get raw comments",
       "description": "The raw comment bodies behind a completed search, grouped by thread or video, filtered and paged. Free. A search reads hundreds to thousands of comments, so filter by source, a substring, or a minimum score, and page with limit and offset.",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "search_id": {
-            "description": "The search id returned by `search` or `list_searches`.",
-            "type": "string"
+            "type": "string",
+            "description": "The search id returned by `search` or `list_searches`."
           },
           "sources": {
+            "type": "array",
             "items": {
+              "type": "string",
               "enum": [
                 "reddit",
                 "youtube",
                 "tiktok",
                 "facebook"
-              ],
-              "type": "string"
-            },
-            "type": "array"
+              ]
+            }
           },
           "contains": {
             "description": "Case-insensitive substring filter on the comment body.",
-            "maxLength": 200,
-            "type": "string"
+            "type": "string",
+            "maxLength": 200
           },
           "min_score": {
             "description": "Minimum upvotes or likes.",
-            "maximum": 9007199254740991,
+            "type": "integer",
             "minimum": -9007199254740991,
-            "type": "integer"
+            "maximum": 9007199254740991
           },
           "limit": {
             "default": 50,
-            "maximum": 200,
+            "type": "integer",
             "minimum": 1,
-            "type": "integer"
+            "maximum": 200
           },
           "offset": {
             "default": 0,
-            "maximum": 9007199254740991,
+            "type": "integer",
             "minimum": 0,
-            "type": "integer"
+            "maximum": 9007199254740991
           }
         },
         "required": [
           "search_id"
-        ]
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Get raw comments",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
       }
     },
     {
       "name": "ask",
       "title": "Ask a follow-up",
-      "description": "Ask a new question over a completed search's corpus and get a cited answer, without searching again. Much cheaper than a new search: only the answer is metered at the API rate. Good for 'what do they say about price', 'summarize the objections', 'which phrases do they use for the problem'. Works on searches started through the API or MCP.",
+      "description": "Ask a new question over a completed search's corpus and get a cited answer, without searching again. Costs less than a new search: only the answer is metered at the API rate. Good for 'what do they say about price', 'summarize the objections', 'which phrases do they use for the problem'. Works on searches started through the API or MCP.",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "search_id": {
-            "description": "The search id returned by `search` or `list_searches`.",
-            "type": "string"
+            "type": "string",
+            "description": "The search id returned by `search` or `list_searches`."
           },
           "question": {
-            "maxLength": 2000,
+            "type": "string",
             "minLength": 3,
-            "type": "string"
+            "maxLength": 2000
           },
           "wait_seconds": {
             "default": 45,
             "description": "Seconds to wait server-side for completion before returning (0 to 55). Call again to resume.",
-            "maximum": 55,
+            "type": "integer",
             "minimum": 0,
-            "type": "integer"
+            "maximum": 55
           }
         },
         "required": [
           "search_id",
           "question"
-        ]
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Ask a follow-up",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://buzzsearch/search-card-v1.html"
+        },
+        "openai/outputTemplate": "ui://buzzsearch/search-card-v1.html",
+        "openai/toolInvocation/invoking": "Asking the research",
+        "openai/toolInvocation/invoked": "Answer ready"
       }
     },
     {
       "name": "generate_hooks",
       "title": "Generate ad hooks",
-      "description": "Write ad hooks grounded in a completed search's quotes, using BuzzSearch's hook writer: each hook opens with a callout lifted from real comments and carries a loop or promise. Metered at the API rate, no new search. Give an `angle` to steer (a product, a persona, a platform).",
+      "description": "Write ad hooks grounded in a completed search's quotes, using BuzzSearch's hook writer: each hook opens with a callout lifted from real comments and carries a loop or promise. Metered at the API rate, no new search. Works on searches started through the API or MCP. Give an `angle` to steer (a product, a persona, a platform).",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "search_id": {
-            "description": "The search id returned by `search` or `list_searches`.",
-            "type": "string"
+            "type": "string",
+            "description": "The search id returned by `search` or `list_searches`."
           },
           "count": {
             "default": 8,
-            "maximum": 20,
+            "type": "integer",
             "minimum": 1,
-            "type": "integer"
+            "maximum": 20
           },
           "angle": {
             "description": "Optional steer, e.g. 'TikTok UGC for a $40 posture corrector'.",
-            "maxLength": 300,
-            "type": "string"
+            "type": "string",
+            "maxLength": 300
           },
           "wait_seconds": {
             "default": 45,
             "description": "Seconds to wait server-side for completion before returning (0 to 55). Call again to resume.",
-            "maximum": 55,
+            "type": "integer",
             "minimum": 0,
-            "type": "integer"
+            "maximum": 55
           }
         },
         "required": [
           "search_id"
-        ]
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Generate ad hooks",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      },
+      "_meta": {
+        "ui": {
+          "resourceUri": "ui://buzzsearch/search-card-v1.html"
+        },
+        "openai/outputTemplate": "ui://buzzsearch/search-card-v1.html",
+        "openai/toolInvocation/invoking": "Writing hooks",
+        "openai/toolInvocation/invoked": "Hooks ready"
       }
     },
     {
@@ -310,41 +408,61 @@
       "title": "List past searches",
       "description": "Recent searches by the signed-in user, newest first, including ones run in the BuzzSearch app. Free. Reread a past search with get_search or get_quotes instead of paying for a new one on the same topic.",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "contains": {
             "description": "Case-insensitive filter on the search query.",
-            "maxLength": 200,
-            "type": "string"
+            "type": "string",
+            "maxLength": 200
           },
           "channel": {
             "default": "all",
             "description": "api = started via API or MCP, web = run in the app.",
+            "type": "string",
             "enum": [
               "all",
               "api",
               "web"
-            ],
-            "type": "string"
+            ]
           },
           "limit": {
             "default": 20,
-            "maximum": 100,
+            "type": "integer",
             "minimum": 1,
-            "type": "integer"
+            "maximum": 100
           }
-        }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "List past searches",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
       }
     },
     {
       "name": "get_balance",
       "title": "Get credit balance",
-      "description": "The user's BuzzSearch credit balance. Searches draw from it at the API rate; top up at buzzsearch.ai.",
+      "description": "The user's BuzzSearch credit balance, with a link to top up. Searches draw from it at the API rate.",
       "inputSchema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
-        "properties": {}
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "annotations": {
+        "title": "Get credit balance",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "execution": {
+        "taskSupport": "forbidden"
       }
     }
   ],
