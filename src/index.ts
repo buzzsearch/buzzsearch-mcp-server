@@ -8,7 +8,9 @@ import {
   CallToolRequestSchema,
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
+  ListResourcesRequestSchema,
   ListToolsRequestSchema,
+  ReadResourceRequestSchema,
   type CallToolResult,
 } from "@modelcontextprotocol/sdk/types.js"
 
@@ -24,8 +26,11 @@ const KEY_HELP =
 
 const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string }
 const manifest = JSON.parse(readFileSync(new URL("../tools.json", import.meta.url), "utf8")) as {
+  instructions?: string
   tools: unknown[]
   prompts: unknown[]
+  resources?: { uri: string }[]
+  contents?: { uri: string }[]
 }
 
 const apiKey = process.env.BUZZSEARCH_API_KEY?.trim()
@@ -53,11 +58,18 @@ const fail = (text: string): CallToolResult => ({ isError: true, content: [{ typ
 
 const server = new Server(
   { name: "buzzsearch", version: pkg.version },
-  { capabilities: { tools: {}, prompts: {} } }
+  { capabilities: { tools: {}, prompts: {}, resources: {} }, instructions: manifest.instructions }
 )
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: manifest.tools }) as never)
 server.setRequestHandler(ListPromptsRequestSchema, async () => ({ prompts: manifest.prompts }) as never)
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({ resources: manifest.resources ?? [] }) as never)
+server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
+  const contents = (manifest.contents ?? []).filter((c) => c.uri === req.params.uri)
+  if (!contents.length) throw new Error(`Unknown resource: ${req.params.uri}`)
+  return { contents } as never
+})
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
   if (!apiKey) return fail(KEY_HELP)

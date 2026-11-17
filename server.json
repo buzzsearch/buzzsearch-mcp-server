@@ -8,7 +8,7 @@
     "url": "https://github.com/buzzsearch/buzzsearch-mcp-server",
     "source": "github"
   },
-  "version": "1.1.6",
+  "version": "1.1.7",
   "remotes": [
     {
       "type": "streamable-http",
@@ -19,7 +19,7 @@
     {
       "registryType": "npm",
       "identifier": "buzzsearch-mcp",
-      "version": "1.1.6",
+      "version": "1.1.7",
       "transport": {
         "type": "stdio"
       },

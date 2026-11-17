@@ -20,9 +20,12 @@ await client.connect(
 )
 const { tools } = await client.listTools()
 const { prompts } = await client.listPrompts()
+const instructions = client.getInstructions()
+const { resources } = await client.listResources()
+const contents = (await Promise.all(resources.map((r) => client.readResource({ uri: r.uri })))).flatMap((r) => r.contents)
 await client.close()
 
-const next = JSON.stringify({ tools, prompts }, null, 2) + "\n"
+const next = JSON.stringify({ instructions, tools, prompts, resources, contents }, null, 2) + "\n"
 const prev = readFileSync(path, "utf8")
 
 if (process.argv.includes("--check")) {
